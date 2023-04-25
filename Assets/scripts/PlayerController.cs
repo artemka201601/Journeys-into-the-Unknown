@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 5f; // сила прыжка
     private Animator anim; // ссылка на компонент Animator
     private bool isGrounded = true; // проверка на землю
+    private string storona = "right";
 
     // Функция Start вызывается перед первым обновлением кадра
     void Start()
@@ -18,6 +19,13 @@ public class PlayerController : MonoBehaviour
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         // Блокируем поворот по оси Z
         rb.freezeRotation = true;
+    }
+
+    IEnumerator reload(){
+        Debug.Log(storona);
+        yield return new WaitForSeconds(0.1f);
+        anim.SetBool("shoot", false);
+        anim.SetBool("shoot_left", false);
     }
 
     // Функция Update вызывается каждый кадр
@@ -51,6 +59,7 @@ public class PlayerController : MonoBehaviour
         // движение влево при нажатии клавиши A или стрелки влево
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
+            storona = "left";
             transform.Translate(Vector2.left * speed * Time.deltaTime);
             anim.SetBool("walk_left", true); // устанавливаем параметр аниматора "walk" в true
         }
@@ -62,6 +71,7 @@ public class PlayerController : MonoBehaviour
         // движение вправо при нажатии клавиши D или стрелки вправо
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
+            storona = "right";
             transform.Translate(Vector2.right * speed * Time.deltaTime);
             anim.SetBool("walk", true); // устанавливаем параметр аниматора "walk" в true
         }
@@ -71,12 +81,25 @@ public class PlayerController : MonoBehaviour
         }
 
         // прыжок при нажатии клавиши Space, если игрок стоит на земле
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.W) && isGrounded)
         {
             GetComponent<Rigidbody2D>().AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             isGrounded = false; // устанавливаем флаг на false, чтобы не позволить игроку прыгать в воздухе
             //anim.SetBool("jump", true); // устанавливаем параметр аниматора "jump" в true
         }
+
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            if (storona == "right"){
+                anim.SetBool("shoot", true);
+                StartCoroutine(reload());
+            }
+            if (storona == "left"){
+                anim.SetBool("shoot_left", true);
+                StartCoroutine(reload());
+            }
+        }
+
     }
 
     // Функция OnCollisionEnter2D вызывается при столкновении с другим объектом
@@ -88,4 +111,6 @@ public class PlayerController : MonoBehaviour
             isGrounded = true;
         }
     }
+
+    
 }
